@@ -186,6 +186,7 @@ sceneEl.addEventListener('loaded', () => {
 
   // ── Barrita de neón ────────────────────────────────────────────────────────
   const stickGroup = new T.Group();
+  stickGroup.frustumCulled = false;
   threeScene.add(stickGroup);
 
   // materiales (se actualizan al cambiar color)
@@ -211,39 +212,35 @@ sceneEl.addEventListener('loaded', () => {
   });
 
   // Tubo
-  const tubeMesh = new T.Mesh(new T.CylinderGeometry(0.006, 0.006, 0.44, 8), tubeMat);
-  tubeMesh.rotation.x = Math.PI / 2;
-  stickGroup.add(tubeMesh);
-
-  // Halo exterior del tubo
-  const haloMesh = new T.Mesh(new T.CylinderGeometry(0.020, 0.020, 0.45, 8), haloMat);
-  haloMesh.rotation.x = Math.PI / 2;
-  stickGroup.add(haloMesh);
-
-  // Punta brillante (punto de mayor temperatura: casi blanca)
   const TIP_Z = -0.222;
-  const tipMesh = new T.Mesh(new T.SphereGeometry(0.013, 10, 7), tipMat);
+
+  function addStickMesh(mesh) {
+    mesh.frustumCulled = false;
+    stickGroup.add(mesh);
+    return mesh;
+  }
+
+  const tubeMesh = addStickMesh(new T.Mesh(new T.CylinderGeometry(0.006, 0.006, 0.44, 8), tubeMat));
+  tubeMesh.rotation.x = Math.PI / 2;
+
+  const haloMesh = addStickMesh(new T.Mesh(new T.CylinderGeometry(0.020, 0.020, 0.45, 8), haloMat));
+  haloMesh.rotation.x = Math.PI / 2;
+
+  const tipMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.013, 10, 7), tipMat));
   tipMesh.position.z = TIP_Z;
-  stickGroup.add(tipMesh);
 
-  // Núcleo incandescente (punto blanco caliente)
-  const emberMesh = new T.Mesh(new T.SphereGeometry(0.007, 8, 6), emberMat);
+  const emberMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.007, 8, 6), emberMat));
   emberMesh.position.z = TIP_Z;
-  stickGroup.add(emberMesh);
 
-  // Halo grande de la punta
-  const tipGlowMesh = new T.Mesh(new T.SphereGeometry(0.048, 10, 7), tipGlowMat);
+  const tipGlowMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.048, 10, 7), tipGlowMat));
   tipGlowMesh.position.z = TIP_Z;
-  stickGroup.add(tipGlowMesh);
 
-  // Halo medio de la punta
   const tipMidGlowMat = new T.MeshBasicMaterial({
     color: colorVec(0), transparent: true, opacity: 0.18,
     blending: T.AdditiveBlending, depthWrite: false,
   });
-  const tipMidGlowMesh = new T.Mesh(new T.SphereGeometry(0.024, 10, 7), tipMidGlowMat);
+  const tipMidGlowMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.024, 10, 7), tipMidGlowMat));
   tipMidGlowMesh.position.z = TIP_Z;
-  stickGroup.add(tipMidGlowMesh);
 
   function setColor(idx) {
     const c = colorVec(idx);
@@ -437,12 +434,22 @@ sceneEl.addEventListener('loaded', () => {
   AFRAME.registerComponent('neon-hand', {
     schema: { hand: { default: 'right' } },
     init() {
-      this.vrLastPt   = null;
-      this.vrDrawing  = false;
-      this.localTip   = new T.Vector3(0, 0, -0.05);
+      this.vrLastPt  = null;
+      this.vrDrawing = false;
+      this.wPos      = new T.Vector3();
+      this.wQuat     = new T.Quaternion();
+      this.localTip  = new T.Vector3(0, 0, -0.05);
 
-      this.el.addEventListener('triggerdown', () => { this.vrDrawing = true;  this.vrLastPt = null; });
-      this.el.addEventListener('triggerup',   () => { this.vrDrawing = false; this.vrLastPt = null; });
+      const startDraw = () => { this.vrDrawing = true;  this.vrLastPt = null; };
+      const stopDraw  = () => { this.vrDrawing = false; this.vrLastPt = null; };
+
+      // Oculus / Quest
+      this.el.addEventListener('triggerdown', startDraw);
+      this.el.addEventListener('triggerup',   stopDraw);
+      // Controladores genéricos WebXR (select = gatillo principal)
+      this.el.addEventListener('selectstart', startDraw);
+      this.el.addEventListener('selectend',   stopDraw);
+
       this.el.addEventListener('bbuttondown', clearTrails);
       this.el.addEventListener('ybuttondown', clearTrails);
 
@@ -456,10 +463,18 @@ sceneEl.addEventListener('loaded', () => {
     },
     tick() {
       const obj = this.el.object3D;
-      const tip = this.localTip.clone().applyQuaternion(obj.quaternion).add(obj.position);
 
-      stickGroup.position.copy(obj.position);
-      stickGroup.quaternion.copy(obj.quaternion);
+      // Posición y rotación mundiales del controlador
+      obj.getWorldPosition(this.wPos);
+      obj.getWorldQuaternion(this.wQuat);
+
+      // La punta del stick apunta hacia adelante (-Z local)
+      const tip = this.localTip.clone()
+        .applyQuaternion(this.wQuat)
+        .add(this.wPos);
+
+      stickGroup.position.copy(this.wPos);
+      stickGroup.quaternion.copy(this.wQuat);
       tipWorld.copy(tip);
 
       if (!this.vrDrawing) return;
@@ -475,18 +490,30 @@ sceneEl.addEventListener('loaded', () => {
   sceneEl.addEventListener('enter-vr', () => {
     document.getElementById('ui').style.display   = 'none';
     document.getElementById('hint').style.display = 'none';
-    const h = document.createElement('a-entity');
-    h.setAttribute('oculus-touch-controls', 'hand: right');
-    h.setAttribute('neon-hand', 'hand: right');
-    h.id = 'vr-hand';
-    sceneEl.appendChild(h);
+
+    // Intentar con Oculus Touch primero; si no hay controladores físicos
+    // también creamos un fallback de mano izquierda para dispositivos sin controladores
+    const handR = document.createElement('a-entity');
+    handR.setAttribute('oculus-touch-controls', 'hand: right');
+    handR.setAttribute('laser-controls', 'hand: right');
+    handR.setAttribute('neon-hand', 'hand: right');
+    handR.id = 'vr-hand-r';
+    sceneEl.appendChild(handR);
+
+    const handL = document.createElement('a-entity');
+    handL.setAttribute('oculus-touch-controls', 'hand: left');
+    handL.setAttribute('laser-controls', 'hand: left');
+    handL.id = 'vr-hand-l';
+    sceneEl.appendChild(handL);
   });
 
   sceneEl.addEventListener('exit-vr', () => {
     document.getElementById('ui').style.display   = '';
     document.getElementById('hint').style.display = '';
-    const h = document.getElementById('vr-hand');
-    if (h) h.remove();
+    ['vr-hand-r', 'vr-hand-l'].forEach(id => {
+      const h = document.getElementById(id);
+      if (h) h.remove();
+    });
   });
 
   // ── Eventos de escritorio / móvil ─────────────────────────────────────────
