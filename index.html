@@ -3,449 +3,563 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lightstick VR – Dibuja en la oscuridad</title>
+  <title>Lightstick VR</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #000; overflow: hidden; }
+    body { background: #000; overflow: hidden; font-family: sans-serif; }
 
     #ui {
       position: fixed;
-      bottom: 20px;
+      bottom: 22px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 12px;
-      z-index: 100;
+      gap: 10px;
       align-items: center;
+      z-index: 300;
+      background: rgba(0,0,0,0.55);
+      padding: 10px 18px;
+      border-radius: 40px;
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
     }
 
-    .color-btn {
-      width: 36px;
-      height: 36px;
+    .swatch {
+      width: 28px; height: 28px;
       border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.3);
       cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s;
-      box-shadow: 0 0 12px currentColor;
+      border: 2px solid rgba(255,255,255,0.0);
+      transition: transform 0.12s, border-color 0.12s;
+      box-shadow: 0 0 8px 2px var(--c);
     }
-    .color-btn:hover, .color-btn.active {
-      transform: scale(1.25);
-      border-color: white;
-    }
+    .swatch:hover   { transform: scale(1.22); }
+    .swatch.active  { border-color: rgba(255,255,255,0.85); transform: scale(1.15); }
 
-    #clear-btn {
-      padding: 8px 18px;
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 20px;
+    .sep { width: 1px; height: 22px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
+
+    .btn {
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 5px 13px;
       cursor: pointer;
-      font-size: 13px;
-      letter-spacing: 0.05em;
-      transition: background 0.15s;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      transition: background 0.12s, color 0.12s;
+      white-space: nowrap;
     }
-    #clear-btn:hover { background: rgba(255,255,255,0.18); }
+    .btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
 
     #hint {
       position: fixed;
-      top: 18px;
+      top: 16px;
       left: 50%;
       transform: translateX(-50%);
-      color: rgba(255,255,255,0.45);
-      font-family: sans-serif;
-      font-size: 13px;
-      letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      letter-spacing: 0.1em;
       pointer-events: none;
+      z-index: 300;
+      text-align: center;
+      text-transform: uppercase;
     }
 
-    #vr-btn {
-      position: fixed;
-      bottom: 70px;
-      right: 20px;
-      padding: 10px 20px;
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 13px;
-      z-index: 100;
+    #size-wrap { display: flex; align-items: center; gap: 6px; }
+    #size-wrap label { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 54px; height: 3px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 2px; outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      background: #fff;
     }
   </style>
 </head>
 <body>
 
-<div id="hint">Mantén clic y mueve para dibujar · Rueda del ratón para el tamaño</div>
+<p id="hint">Mantén presionado y mueve para dibujar &nbsp;·&nbsp; Rueda: tamaño</p>
 
 <div id="ui">
-  <div class="color-btn active" data-color="#ff2d78" style="background:#ff2d78; color:#ff2d78;"></div>
-  <div class="color-btn" data-color="#00eeff" style="background:#00eeff; color:#00eeff;"></div>
-  <div class="color-btn" data-color="#39ff14" style="background:#39ff14; color:#39ff14;"></div>
-  <div class="color-btn" data-color="#ff9900" style="background:#ff9900; color:#ff9900;"></div>
-  <div class="color-btn" data-color="#bf00ff" style="background:#bf00ff; color:#bf00ff;"></div>
-  <div class="color-btn" data-color="#ffffff" style="background:#fff; color:#fff;"></div>
-  <button id="clear-btn">Borrar todo</button>
+  <div class="swatch active" data-idx="0" style="background:#ff1f5e;--c:#ff1f5e"></div>
+  <div class="swatch"        data-idx="1" style="background:#00dfff;--c:#00dfff"></div>
+  <div class="swatch"        data-idx="2" style="background:#22ff55;--c:#22ff55"></div>
+  <div class="swatch"        data-idx="3" style="background:#ffaa00;--c:#ffaa00"></div>
+  <div class="swatch"        data-idx="4" style="background:#cc33ff;--c:#cc33ff"></div>
+  <div class="swatch"        data-idx="5" style="background:#ffffff;--c:#ffffff"></div>
+  <div class="sep"></div>
+  <div id="size-wrap">
+    <label>TAM</label>
+    <input type="range" id="szSlider" min="1" max="10" value="3" step="0.5">
+  </div>
+  <div class="sep"></div>
+  <button class="btn" id="trailBtn">Rastro: ON</button>
+  <button class="btn" id="clearBtn">Borrar</button>
 </div>
 
-<a-scene
-  id="scene"
-  background="color: #000000"
-  renderer="antialias: true; colorManagement: true"
-  vr-mode-ui="enabled: true"
+<a-scene id="scene"
+  background="color: #000008"
+  renderer="antialias:true; colorManagement:true; sortObjects:true"
+  vr-mode-ui="enabled:true"
 >
-  <!-- Cámara con controles de escritorio y móvil -->
   <a-entity id="rig" position="0 1.6 0">
-    <a-camera
-      id="cam"
-      look-controls="pointerLockEnabled: false"
-      wasd-controls="enabled: false"
-    ></a-camera>
+    <a-camera id="cam"
+      look-controls="pointerLockEnabled:false; magicWindowTrackingEnabled:true"
+      wasd-controls="enabled:false">
+    </a-camera>
   </a-entity>
-
-  <!-- Partículas de ambiente (estrellas de fondo) -->
-  <a-entity id="stars"></a-entity>
-
-  <!-- Contenedor de trazos -->
-  <a-entity id="strokes"></a-entity>
-
-  <!-- Luz de ambiente mínima para que la escena sea casi negra -->
-  <a-light type="ambient" color="#111" intensity="0.3"></a-light>
+  <a-light type="ambient" color="#000" intensity="0.04"></a-light>
 </a-scene>
 
 <script>
-// ─── Estado global ────────────────────────────────────────────────────────────
-const state = {
-  color: '#ff2d78',
-  drawing: false,
-  brushSize: 0.012,
-  lastPoint: null,
-  minDist: 0.008,   // distancia mínima entre puntos del trazo
+// ═══════════════════════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN
+// ═══════════════════════════════════════════════════════════════════════════════
+const COLORS = [
+  { r:1.00, g:0.12, b:0.37 },  // rosa
+  { r:0.00, g:0.87, b:1.00 },  // cian
+  { r:0.13, g:1.00, b:0.33 },  // verde
+  { r:1.00, g:0.67, b:0.00 },  // naranja
+  { r:0.80, g:0.20, b:1.00 },  // morado
+  { r:1.00, g:1.00, b:1.00 },  // blanco
+];
+
+const CFG = {
+  colorIdx:    0,
+  brushRadius: 0.009,   // radio del trazo
+  trailLife:   4000,    // ms que dura el rastro
+  trailOn:     true,
+  minDist:     0.006,   // distancia mínima entre puntos
+  camDist:     0.85,    // metros desde la cámara
 };
 
-const scene   = document.getElementById('scene');
-const cam     = document.getElementById('cam');
-const strokes = document.getElementById('strokes');
+// ═══════════════════════════════════════════════════════════════════════════════
+//  SISTEMA PRINCIPAL (arranca cuando A-Frame está listo)
+// ═══════════════════════════════════════════════════════════════════════════════
+const sceneEl = document.getElementById('scene');
+const camEl   = document.getElementById('cam');
 
-// ─── Estrellas de fondo ───────────────────────────────────────────────────────
-function createStars() {
-  const container = document.getElementById('stars');
-  for (let i = 0; i < 600; i++) {
-    const star = document.createElement('a-sphere');
-    const r = 80 + Math.random() * 40;
-    const theta = Math.random() * Math.PI * 2;
-    const phi   = Math.acos(2 * Math.random() - 1);
-    star.setAttribute('position', {
-      x: r * Math.sin(phi) * Math.cos(theta),
-      y: r * Math.sin(phi) * Math.sin(theta),
-      z: r * Math.cos(phi),
+sceneEl.addEventListener('loaded', () => {
+  const threeScene = sceneEl.object3D;
+  const T = THREE;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function colorVec(idx) {
+    const c = COLORS[idx];
+    return new T.Color(c.r, c.g, c.b);
+  }
+
+  // ── Estrellas ──────────────────────────────────────────────────────────────
+  {
+    const N = 1400;
+    const pos = new Float32Array(N * 3);
+    const col = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      const r     = 65 + Math.random() * 55;
+      const theta = Math.random() * Math.PI * 2;
+      const phi   = Math.acos(2 * Math.random() - 1);
+      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i*3+2] = r * Math.cos(phi);
+      const b = 0.35 + Math.random() * 0.65;
+      const warm = Math.random();
+      col[i*3]   = b * (0.85 + warm * 0.15);
+      col[i*3+1] = b * (0.85 + warm * 0.05);
+      col[i*3+2] = b * (0.90 + (1-warm) * 0.10);
+    }
+    const geo = new T.BufferGeometry();
+    geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+    geo.setAttribute('color',    new T.BufferAttribute(col, 3));
+    const mat = new T.PointsMaterial({
+      size: 0.10, vertexColors: true,
+      blending: T.AdditiveBlending, depthWrite: false,
+      transparent: true, opacity: 0.9, sizeAttenuation: true,
     });
-    const s = 0.04 + Math.random() * 0.12;
-    star.setAttribute('radius', s);
-    const bright = Math.round(120 + Math.random() * 135);
-    star.setAttribute('color', `rgb(${bright},${bright},${bright})`);
-    star.setAttribute('material', 'emissive: white; emissiveIntensity: 0.6; shader: flat');
-    container.appendChild(star);
+    threeScene.add(new T.Points(geo, mat));
   }
-}
-createStars();
 
-// ─── Barrita de neón (cursor 3D) ──────────────────────────────────────────────
-const stick = document.createElement('a-entity');
+  // ── Barrita de neón ────────────────────────────────────────────────────────
+  const stickGroup = new T.Group();
+  threeScene.add(stickGroup);
 
-// cuerpo del tubo
-const tube = document.createElement('a-cylinder');
-tube.setAttribute('radius', '0.018');
-tube.setAttribute('height', '0.55');
-tube.setAttribute('rotation', '90 0 0');
-tube.setAttribute('position', '0 0 0');
-tube.id = 'stick-tube';
-stick.appendChild(tube);
+  // materiales (se actualizan al cambiar color)
+  const tubeMat = new T.MeshBasicMaterial({
+    color: colorVec(0),
+    blending: T.AdditiveBlending, depthWrite: false,
+  });
+  const haloMat = new T.MeshBasicMaterial({
+    color: colorVec(0), transparent: true, opacity: 0.10,
+    blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide,
+  });
+  const tipMat = new T.MeshBasicMaterial({
+    color: colorVec(0),
+    blending: T.AdditiveBlending, depthWrite: false,
+  });
+  const tipGlowMat = new T.MeshBasicMaterial({
+    color: colorVec(0), transparent: true, opacity: 0.07,
+    blending: T.AdditiveBlending, depthWrite: false,
+  });
+  const emberMat = new T.MeshBasicMaterial({
+    color: new T.Color(1, 1, 1),  // siempre blanca brillante (como incandescente)
+    blending: T.AdditiveBlending, depthWrite: false,
+  });
 
-// halo brillante externo
-const glow = document.createElement('a-cylinder');
-glow.setAttribute('radius', '0.038');
-glow.setAttribute('height', '0.56');
-glow.setAttribute('rotation', '90 0 0');
-glow.setAttribute('position', '0 0 0');
-glow.setAttribute('material', 'opacity: 0.18; transparent: true; side: double; depthWrite: false; shader: flat');
-glow.id = 'stick-glow';
-stick.appendChild(glow);
+  // Tubo
+  const tubeMesh = new T.Mesh(new T.CylinderGeometry(0.006, 0.006, 0.44, 8), tubeMat);
+  tubeMesh.rotation.x = Math.PI / 2;
+  stickGroup.add(tubeMesh);
 
-// punta emisora de luz
-const tip = document.createElement('a-sphere');
-tip.setAttribute('radius', '0.022');
-tip.setAttribute('position', '0 0 -0.278');
-tip.id = 'stick-tip';
-stick.appendChild(tip);
+  // Halo exterior del tubo
+  const haloMesh = new T.Mesh(new T.CylinderGeometry(0.020, 0.020, 0.45, 8), haloMat);
+  haloMesh.rotation.x = Math.PI / 2;
+  stickGroup.add(haloMesh);
 
-// luz puntual que emana del stick
-const light = document.createElement('a-light');
-light.setAttribute('type', 'point');
-light.setAttribute('intensity', '1.8');
-light.setAttribute('distance', '2.2');
-light.setAttribute('decay', '2');
-light.id = 'stick-light';
-stick.appendChild(light);
+  // Punta brillante (punto de mayor temperatura: casi blanca)
+  const TIP_Z = -0.222;
+  const tipMesh = new T.Mesh(new T.SphereGeometry(0.013, 10, 7), tipMat);
+  tipMesh.position.z = TIP_Z;
+  stickGroup.add(tipMesh);
 
-scene.appendChild(stick);
+  // Núcleo incandescente (punto blanco caliente)
+  const emberMesh = new T.Mesh(new T.SphereGeometry(0.007, 8, 6), emberMat);
+  emberMesh.position.z = TIP_Z;
+  stickGroup.add(emberMesh);
 
-function updateStickColor(hex) {
-  tube.setAttribute('material', `color: ${hex}; emissive: ${hex}; emissiveIntensity: 1.2; shader: flat`);
-  glow.setAttribute('material', `color: ${hex}; emissive: ${hex}; emissiveIntensity: 0.9; opacity: 0.18; transparent: true; side: double; depthWrite: false; shader: flat`);
-  tip.setAttribute('material', `color: ${hex}; emissive: ${hex}; emissiveIntensity: 2; shader: flat`);
-  light.setAttribute('color', hex);
-}
-updateStickColor(state.color);
+  // Halo grande de la punta
+  const tipGlowMesh = new T.Mesh(new T.SphereGeometry(0.048, 10, 7), tipGlowMat);
+  tipGlowMesh.position.z = TIP_Z;
+  stickGroup.add(tipGlowMesh);
 
-// ─── Proyección del cursor en el espacio 3D ───────────────────────────────────
-const _v3      = new THREE.Vector3();
-const _quat    = new THREE.Quaternion();
-const _dir     = new THREE.Vector3();
-const DIST     = 0.9; // metros frente a la cámara
+  // Halo medio de la punta
+  const tipMidGlowMat = new T.MeshBasicMaterial({
+    color: colorVec(0), transparent: true, opacity: 0.18,
+    blending: T.AdditiveBlending, depthWrite: false,
+  });
+  const tipMidGlowMesh = new T.Mesh(new T.SphereGeometry(0.024, 10, 7), tipMidGlowMat);
+  tipMidGlowMesh.position.z = TIP_Z;
+  stickGroup.add(tipMidGlowMesh);
 
-function getStickWorldPos(nx, ny) {
-  // nx, ny en [-1, 1] normalizados
-  const camEl  = cam;
-  const camObj = camEl.object3D;
+  function setColor(idx) {
+    const c = colorVec(idx);
+    tubeMat.color.copy(c);
+    haloMat.color.copy(c);
+    tipMat.color.copy(c);
+    tipGlowMat.color.copy(c);
+    tipMidGlowMat.color.copy(c);
+    // ember siempre blanca
+  }
 
-  camObj.getWorldPosition(_v3);
-  camObj.getWorldQuaternion(_quat);
+  // ── Rastro: pool de segmentos de línea ─────────────────────────────────────
+  //   Cada segmento = una THREE.Line de 2 puntos con blending aditivo
+  //   Al expirar vuelve al pool (invisible) para reutilizarse
 
-  // dirección al punto de pantalla
-  const fov    = camEl.components.camera.data.fov * (Math.PI / 180);
-  const aspect = window.innerWidth / window.innerHeight;
-  const halfH  = Math.tan(fov / 2);
-  const halfW  = halfH * aspect;
+  const linePool   = [];
+  const activeSegs = []; // { line, born, life, col }
 
-  _dir.set(nx * halfW, ny * halfH, -1).normalize();
-  _dir.applyQuaternion(_quat);
+  function makePoolLine() {
+    const geo = new T.BufferGeometry();
+    geo.setAttribute('position', new T.BufferAttribute(new Float32Array(6), 3));
+    const mat = new T.LineBasicMaterial({
+      blending: T.AdditiveBlending, depthWrite: false,
+      transparent: true, opacity: 1, vertexColors: false,
+    });
+    const ln = new T.Line(geo, mat);
+    ln.frustumCulled = false;
+    threeScene.add(ln);
+    return ln;
+  }
 
-  return new THREE.Vector3().addVectors(_v3, _dir.multiplyScalar(DIST));
-}
+  function getLine() {
+    return linePool.length ? linePool.pop() : makePoolLine();
+  }
 
-function moveStick(nx, ny) {
-  const pos = getStickWorldPos(nx, ny);
+  function recycleLine(ln) {
+    ln.visible = false;
+    linePool.push(ln);
+  }
 
-  const camObj = cam.object3D;
-  camObj.getWorldQuaternion(_quat);
+  function addSegment(p1, p2, colIdx) {
+    if (!CFG.trailOn) return;
+    const ln  = getLine();
+    const arr = ln.geometry.attributes.position.array;
+    arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
+    arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
+    ln.geometry.attributes.position.needsUpdate = true;
+    ln.geometry.computeBoundingSphere();
+    const c = COLORS[colIdx];
+    ln.material.color.setRGB(c.r, c.g, c.b);
+    ln.material.opacity = 1;
+    ln.visible = true;
+    activeSegs.push({ line: ln, born: performance.now(), life: CFG.trailLife });
+  }
 
-  stick.object3D.position.copy(pos);
-  stick.object3D.quaternion.copy(_quat);
-}
-
-// ─── Dibujo de trazos ─────────────────────────────────────────────────────────
-function hexToVec3(hex) {
-  const r = parseInt(hex.slice(1,3),16)/255;
-  const g = parseInt(hex.slice(3,5),16)/255;
-  const b = parseInt(hex.slice(5,7),16)/255;
-  return new THREE.Color(r, g, b);
-}
-
-function addSegment(p1, p2) {
-  const dir  = new THREE.Vector3().subVectors(p2, p1);
-  const len  = dir.length();
-  if (len < 0.001) return;
-
-  const mid  = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-
-  const seg  = document.createElement('a-cylinder');
-  seg.setAttribute('radius', state.brushSize);
-  seg.setAttribute('height', len);
-  seg.setAttribute('position', `${mid.x} ${mid.y} ${mid.z}`);
-
-  // orientar el cilindro de p1 a p2
-  const up   = new THREE.Vector3(0, 1, 0);
-  const q    = new THREE.Quaternion().setFromUnitVectors(up, dir.normalize());
-  const e    = new THREE.Euler().setFromQuaternion(q, 'XYZ');
-  seg.setAttribute('rotation', `${THREE.MathUtils.radToDeg(e.x)} ${THREE.MathUtils.radToDeg(e.y)} ${THREE.MathUtils.radToDeg(e.z)}`);
-
-  const c = state.color;
-  seg.setAttribute('material', `color: ${c}; emissive: ${c}; emissiveIntensity: 1.4; shader: flat`);
-
-  strokes.appendChild(seg);
-
-  // halo del trazo
-  const halo = document.createElement('a-cylinder');
-  halo.setAttribute('radius', state.brushSize * 2.6);
-  halo.setAttribute('height', len);
-  halo.setAttribute('position', `${mid.x} ${mid.y} ${mid.z}`);
-  halo.setAttribute('rotation', `${THREE.MathUtils.radToDeg(e.x)} ${THREE.MathUtils.radToDeg(e.y)} ${THREE.MathUtils.radToDeg(e.z)}`);
-  halo.setAttribute('material', `color: ${c}; emissive: ${c}; emissiveIntensity: 0.7; opacity: 0.22; transparent: true; side: double; depthWrite: false; shader: flat`);
-  strokes.appendChild(halo);
-}
-
-// ─── Eventos de ratón / touch ─────────────────────────────────────────────────
-function normCoords(clientX, clientY) {
-  return {
-    nx:  (clientX / window.innerWidth)  * 2 - 1,
-    ny: -(clientY / window.innerHeight) * 2 + 1,
+  // ── Chispas / partículas de la punta ───────────────────────────────────────
+  const SPARK_N  = 160;
+  const sparkBuf = {
+    pos: new Float32Array(SPARK_N * 3),
+    col: new Float32Array(SPARK_N * 3),
   };
-}
+  const sparkGeo = new T.BufferGeometry();
+  sparkGeo.setAttribute('position', new T.BufferAttribute(sparkBuf.pos, 3));
+  sparkGeo.setAttribute('color',    new T.BufferAttribute(sparkBuf.col, 3));
+  const sparkMat = new T.PointsMaterial({
+    size: 0.022, vertexColors: true,
+    blending: T.AdditiveBlending, depthWrite: false,
+    transparent: true, sizeAttenuation: true,
+  });
+  threeScene.add(new T.Points(sparkGeo, sparkMat));
 
-window.addEventListener('mousemove', e => {
-  const { nx, ny } = normCoords(e.clientX, e.clientY);
-  moveStick(nx, ny);
+  const sparkData = Array.from({ length: SPARK_N }, () => ({
+    active: false,
+    pos: new T.Vector3(),
+    vel: new T.Vector3(),
+    born: 0, life: 0,
+    col: COLORS[0],
+  }));
 
-  if (state.drawing) {
-    const pos = getStickWorldPos(nx, ny);
-    if (state.lastPoint) {
-      const d = pos.distanceTo(state.lastPoint);
-      if (d >= state.minDist) {
-        addSegment(state.lastPoint, pos);
-        state.lastPoint = pos.clone();
+  function emitSpark(origin, colIdx) {
+    const s = sparkData.find(d => !d.active);
+    if (!s) return;
+    s.active = true;
+    s.pos.copy(origin);
+    const sp = 0.015 + Math.random() * 0.025;
+    s.vel.set(
+      (Math.random() - 0.5) * sp,
+      (Math.random() - 0.5) * sp,
+      (Math.random() - 0.5) * sp,
+    );
+    s.born = performance.now();
+    s.life = 250 + Math.random() * 600;
+    s.col  = COLORS[colIdx];
+  }
+
+  // ── Posicionamiento del stick en modo escritorio/móvil ─────────────────────
+  const _camPos  = new T.Vector3();
+  const _camQuat = new T.Quaternion();
+  const _dir     = new T.Vector3();
+  const tipWorld = new T.Vector3(); // posición mundial de la punta (se actualiza cada frame)
+
+  function positionStickFromNDC(nx, ny) {
+    const co = camEl.object3D;
+    co.getWorldPosition(_camPos);
+    co.getWorldQuaternion(_camQuat);
+
+    const fovRad = camEl.components.camera.data.fov * (Math.PI / 180);
+    const halfH  = Math.tan(fovRad * 0.5);
+    const halfW  = halfH * (window.innerWidth / window.innerHeight);
+
+    _dir.set(nx * halfW, ny * halfH, -1).normalize().applyQuaternion(_camQuat);
+
+    stickGroup.position.copy(_camPos).addScaledVector(_dir, CFG.camDist);
+    stickGroup.quaternion.copy(_camQuat);
+
+    // Punta en world space
+    tipWorld.set(0, 0, TIP_Z)
+      .applyQuaternion(_camQuat)
+      .add(stickGroup.position);
+  }
+
+  // ── Lógica de dibujo ───────────────────────────────────────────────────────
+  let drawing = false;
+  let lastPt  = null;
+
+  function onDraw() {
+    if (!drawing) return;
+    if (!lastPt) { lastPt = tipWorld.clone(); return; }
+    const d = tipWorld.distanceTo(lastPt);
+    if (d < CFG.minDist) return;
+    addSegment(lastPt, tipWorld, CFG.colorIdx);
+    if (Math.random() < 0.35) emitSpark(tipWorld, CFG.colorIdx);
+    lastPt.copy(tipWorld);
+  }
+
+  // ── Tick principal (registrado como componente A-Frame) ────────────────────
+  AFRAME.registerComponent('neon-system', {
+    tick(time, dt) {
+      const now = performance.now();
+      const t   = now * 0.001;
+
+      // Pulso de la punta
+      const pulse = 1 + 0.18 * Math.sin(t * 2.8);
+      tipGlowMesh.scale.setScalar(pulse);
+      tipMidGlowMesh.scale.setScalar(0.9 + 0.1 * Math.sin(t * 3.5));
+
+      // Fade de segmentos de rastro
+      for (let i = activeSegs.length - 1; i >= 0; i--) {
+        const s   = activeSegs[i];
+        const age = now - s.born;
+        if (age >= s.life) { recycleLine(s.line); activeSegs.splice(i, 1); continue; }
+        // fade: rápido al inicio para dar sensación de calor que se enfría,
+        //       pero mantiene algo de brillo antes de desaparecer
+        const progress = age / s.life;
+        const opacity  = Math.pow(1 - progress, 0.7);
+        s.line.material.opacity = opacity;
       }
-    } else {
-      state.lastPoint = pos.clone();
-    }
+
+      // Chispas
+      for (let i = 0; i < SPARK_N; i++) {
+        const s = sparkData[i];
+        if (!s.active) {
+          sparkBuf.pos[i*3+1] = -9999; // ocultar
+          continue;
+        }
+        const age = now - s.born;
+        if (age > s.life) { s.active = false; sparkBuf.pos[i*3+1] = -9999; continue; }
+        s.vel.y -= 0.000018 * dt;
+        s.pos.addScaledVector(s.vel, dt);
+        sparkBuf.pos[i*3]   = s.pos.x;
+        sparkBuf.pos[i*3+1] = s.pos.y;
+        sparkBuf.pos[i*3+2] = s.pos.z;
+        const tf = Math.pow(1 - age / s.life, 0.6);
+        sparkBuf.col[i*3]   = s.col.r * tf;
+        sparkBuf.col[i*3+1] = s.col.g * tf;
+        sparkBuf.col[i*3+2] = s.col.b * tf;
+      }
+      sparkGeo.attributes.position.needsUpdate = true;
+      sparkGeo.attributes.color.needsUpdate    = true;
+
+      // Emitir chispas pasivas mientras se dibuja
+      if (drawing && CFG.trailOn && Math.random() < 0.25) {
+        emitSpark(tipWorld, CFG.colorIdx);
+      }
+    },
+  });
+
+  sceneEl.setAttribute('neon-system', '');
+
+  // ── Controladores VR ───────────────────────────────────────────────────────
+  AFRAME.registerComponent('neon-hand', {
+    schema: { hand: { default: 'right' } },
+    init() {
+      this.vrLastPt   = null;
+      this.vrDrawing  = false;
+      this.localTip   = new T.Vector3(0, 0, -0.05);
+
+      this.el.addEventListener('triggerdown', () => { this.vrDrawing = true;  this.vrLastPt = null; });
+      this.el.addEventListener('triggerup',   () => { this.vrDrawing = false; this.vrLastPt = null; });
+      this.el.addEventListener('bbuttondown', clearTrails);
+      this.el.addEventListener('ybuttondown', clearTrails);
+
+      this.el.addEventListener('thumbstickmoved', e => {
+        const { x, y } = e.detail;
+        if (Math.hypot(x, y) < 0.65) return;
+        const angle = Math.atan2(y, x);
+        const idx   = ((Math.floor(((angle + Math.PI) / (Math.PI * 2)) * COLORS.length)) % COLORS.length + COLORS.length) % COLORS.length;
+        changeColor(idx);
+      });
+    },
+    tick() {
+      const obj = this.el.object3D;
+      const tip = this.localTip.clone().applyQuaternion(obj.quaternion).add(obj.position);
+
+      stickGroup.position.copy(obj.position);
+      stickGroup.quaternion.copy(obj.quaternion);
+      tipWorld.copy(tip);
+
+      if (!this.vrDrawing) return;
+      if (!this.vrLastPt) { this.vrLastPt = tip.clone(); return; }
+      const d = tip.distanceTo(this.vrLastPt);
+      if (d < CFG.minDist) return;
+      addSegment(this.vrLastPt, tip, CFG.colorIdx);
+      if (Math.random() < 0.4) emitSpark(tip, CFG.colorIdx);
+      this.vrLastPt.copy(tip);
+    },
+  });
+
+  sceneEl.addEventListener('enter-vr', () => {
+    document.getElementById('ui').style.display   = 'none';
+    document.getElementById('hint').style.display = 'none';
+    const h = document.createElement('a-entity');
+    h.setAttribute('oculus-touch-controls', 'hand: right');
+    h.setAttribute('neon-hand', 'hand: right');
+    h.id = 'vr-hand';
+    sceneEl.appendChild(h);
+  });
+
+  sceneEl.addEventListener('exit-vr', () => {
+    document.getElementById('ui').style.display   = '';
+    document.getElementById('hint').style.display = '';
+    const h = document.getElementById('vr-hand');
+    if (h) h.remove();
+  });
+
+  // ── Eventos de escritorio / móvil ─────────────────────────────────────────
+  function ndcFromClient(cx, cy) {
+    return [
+       (cx / window.innerWidth)  * 2 - 1,
+      -(cy / window.innerHeight) * 2 + 1,
+    ];
   }
-});
 
-window.addEventListener('mousedown', e => {
-  if (e.target.closest('#ui')) return;
-  state.drawing   = true;
-  state.lastPoint = null;
-});
+  window.addEventListener('mousemove', e => {
+    positionStickFromNDC(...ndcFromClient(e.clientX, e.clientY));
+    onDraw();
+  });
+  window.addEventListener('mousedown', e => {
+    if (e.target.closest('#ui')) return;
+    drawing = true; lastPt = null;
+  });
+  window.addEventListener('mouseup', () => { drawing = false; lastPt = null; });
 
-window.addEventListener('mouseup', () => {
-  state.drawing   = false;
-  state.lastPoint = null;
-});
+  window.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    positionStickFromNDC(...ndcFromClient(t.clientX, t.clientY));
+    onDraw();
+  }, { passive: false });
+  window.addEventListener('touchstart', e => {
+    if (e.target.closest('#ui')) return;
+    drawing = true; lastPt = null;
+  }, { passive: true });
+  window.addEventListener('touchend', () => { drawing = false; lastPt = null; });
 
-// Touch
-window.addEventListener('touchmove', e => {
-  e.preventDefault();
-  const t = e.touches[0];
-  const { nx, ny } = normCoords(t.clientX, t.clientY);
-  moveStick(nx, ny);
-  if (state.drawing) {
-    const pos = getStickWorldPos(nx, ny);
-    if (state.lastPoint && pos.distanceTo(state.lastPoint) >= state.minDist) {
-      addSegment(state.lastPoint, pos);
-      state.lastPoint = pos.clone();
-    } else if (!state.lastPoint) {
-      state.lastPoint = pos.clone();
+  window.addEventListener('wheel', e => {
+    CFG.brushRadius = Math.max(0.003, Math.min(0.045, CFG.brushRadius - e.deltaY * 0.00003));
+    document.getElementById('szSlider').value = CFG.brushRadius * 1000 / 4.5;
+  }, { passive: true });
+
+  // Posición inicial
+  positionStickFromNDC(0, 0);
+
+  // ── Funciones globales de control ─────────────────────────────────────────
+  function clearTrails() {
+    for (let i = activeSegs.length - 1; i >= 0; i--) {
+      recycleLine(activeSegs[i].line);
     }
+    activeSegs.length = 0;
   }
-}, { passive: false });
 
-window.addEventListener('touchstart', e => {
-  if (e.target.closest('#ui')) return;
-  state.drawing   = true;
-  state.lastPoint = null;
-}, { passive: true });
+  function changeColor(idx) {
+    CFG.colorIdx = idx;
+    setColor(idx);
+    document.querySelectorAll('.swatch').forEach((s, i) => {
+      s.classList.toggle('active', i === idx);
+    });
+  }
 
-window.addEventListener('touchend', () => {
-  state.drawing   = false;
-  state.lastPoint = null;
-});
+  // ── Conectar UI ───────────────────────────────────────────────────────────
+  document.querySelectorAll('.swatch').forEach((s, i) => {
+    s.addEventListener('click', () => changeColor(i));
+  });
 
-// Rueda del ratón → tamaño del pincel
-window.addEventListener('wheel', e => {
-  state.brushSize = Math.max(0.004, Math.min(0.06, state.brushSize - e.deltaY * 0.00005));
-});
+  document.getElementById('clearBtn').addEventListener('click', clearTrails);
 
-// ─── UI: colores y borrar ────────────────────────────────────────────────────
-document.querySelectorAll('.color-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.color = btn.dataset.color;
-    updateStickColor(state.color);
+  document.getElementById('trailBtn').addEventListener('click', function() {
+    CFG.trailOn = !CFG.trailOn;
+    this.textContent = 'Rastro: ' + (CFG.trailOn ? 'ON' : 'OFF');
+    if (!CFG.trailOn) clearTrails();
+  });
+
+  document.getElementById('szSlider').addEventListener('input', function() {
+    CFG.brushRadius = this.value * 4.5 / 1000;
   });
 });
-
-document.getElementById('clear-btn').addEventListener('click', () => {
-  while (strokes.firstChild) strokes.removeChild(strokes.firstChild);
-});
-
-// ─── Controladores VR (mano derecha) ─────────────────────────────────────────
-scene.addEventListener('enter-vr', () => {
-  document.getElementById('hint').style.display = 'none';
-  document.getElementById('ui').style.display   = 'none';
-
-  const rightHand = document.createElement('a-entity');
-  rightHand.setAttribute('oculus-touch-controls', 'hand: right');
-  rightHand.setAttribute('id', 'right-hand');
-  rightHand.setAttribute('vr-draw', '');
-  scene.appendChild(rightHand);
-
-  const leftHand = document.createElement('a-entity');
-  leftHand.setAttribute('oculus-touch-controls', 'hand: left');
-  leftHand.setAttribute('id', 'left-hand');
-  scene.appendChild(leftHand);
-});
-
-scene.addEventListener('exit-vr', () => {
-  document.getElementById('hint').style.display = '';
-  document.getElementById('ui').style.display   = '';
-  const rh = document.getElementById('right-hand');
-  const lh = document.getElementById('left-hand');
-  if (rh) rh.parentNode.removeChild(rh);
-  if (lh) lh.parentNode.removeChild(lh);
-});
-
-// Componente de dibujo VR con controlador
-AFRAME.registerComponent('vr-draw', {
-  init() {
-    this.drawing    = false;
-    this.lastPoint  = null;
-    this.tipOffset  = new THREE.Vector3(0, 0, -0.28);
-
-    this.el.addEventListener('triggerdown', () => {
-      this.drawing   = true;
-      this.lastPoint = null;
-    });
-    this.el.addEventListener('triggerup', () => {
-      this.drawing   = false;
-      this.lastPoint = null;
-    });
-
-    // Botones de color en VR con thumbstick
-    this.el.addEventListener('thumbstickmoved', e => {
-      const colors = ['#ff2d78','#00eeff','#39ff14','#ff9900','#bf00ff','#ffffff'];
-      const angle  = Math.atan2(e.detail.y, e.detail.x);
-      const idx    = Math.round(((angle + Math.PI) / (Math.PI * 2)) * colors.length) % colors.length;
-      if (Math.hypot(e.detail.x, e.detail.y) > 0.7) {
-        state.color = colors[idx];
-        updateStickColor(state.color);
-      }
-    });
-
-    // Botón B / Y → borrar
-    this.el.addEventListener('bbuttondown', () => {
-      while (strokes.firstChild) strokes.removeChild(strokes.firstChild);
-    });
-  },
-
-  tick() {
-    const obj = this.el.object3D;
-
-    // Mover el stick a la posición del controlador
-    const tip = this.tipOffset.clone().applyQuaternion(obj.quaternion).add(obj.position);
-    stick.object3D.position.copy(obj.position);
-    stick.object3D.quaternion.copy(obj.quaternion);
-
-    if (this.drawing) {
-      if (this.lastPoint && tip.distanceTo(this.lastPoint) >= state.minDist) {
-        addSegment(this.lastPoint, tip);
-        this.lastPoint = tip.clone();
-      } else if (!this.lastPoint) {
-        this.lastPoint = tip.clone();
-      }
-    }
-  },
-});
-
-// ─── Animación del stick (respiración / pulso) ───────────────────────────────
-let t = 0;
-function animateStick() {
-  requestAnimationFrame(animateStick);
-  t += 0.04;
-  const pulse = 1 + 0.12 * Math.sin(t * 2.5);
-  light.setAttribute('intensity', 1.8 * pulse);
-}
-animateStick();
 </script>
 </body>
 </html>
