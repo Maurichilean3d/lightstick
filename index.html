@@ -1,98 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lightstick VR</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #000; overflow: hidden; font-family: sans-serif; }
-
-    #ui {
-      position: fixed;
-      bottom: 22px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      z-index: 300;
-      background: rgba(0,0,0,0.55);
-      padding: 10px 18px;
-      border-radius: 40px;
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(10px);
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#000;overflow:hidden;font-family:sans-serif}
+    #ui{
+      position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+      display:flex;gap:10px;align-items:center;z-index:300;
+      background:rgba(0,0,0,0.55);padding:10px 18px;border-radius:40px;
+      border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);
     }
-
-    .swatch {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid rgba(255,255,255,0.0);
-      transition: transform 0.12s, border-color 0.12s;
-      box-shadow: 0 0 8px 2px var(--c);
+    .swatch{
+      width:28px;height:28px;border-radius:50%;cursor:pointer;
+      border:2px solid transparent;transition:transform .12s,border-color .12s;
     }
-    .swatch:hover   { transform: scale(1.22); }
-    .swatch.active  { border-color: rgba(255,255,255,0.85); transform: scale(1.15); }
-
-    .sep { width: 1px; height: 22px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
-
-    .btn {
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.65);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 14px;
-      padding: 5px 13px;
-      cursor: pointer;
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      transition: background 0.12s, color 0.12s;
-      white-space: nowrap;
+    .swatch:hover{transform:scale(1.22)}
+    .swatch.active{border-color:rgba(255,255,255,.85);transform:scale(1.15)}
+    .sep{width:1px;height:22px;background:rgba(255,255,255,.12);flex-shrink:0}
+    .btn{
+      background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);
+      border:1px solid rgba(255,255,255,.14);border-radius:14px;
+      padding:5px 13px;cursor:pointer;font-size:11px;letter-spacing:.06em;
+      transition:background .12s,color .12s;white-space:nowrap;
     }
-    .btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
-
-    #hint {
-      position: fixed;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.3);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      pointer-events: none;
-      z-index: 300;
-      text-align: center;
-      text-transform: uppercase;
+    .btn:hover{background:rgba(255,255,255,.14);color:#fff}
+    #hint{
+      position:fixed;top:16px;left:50%;transform:translateX(-50%);
+      color:rgba(255,255,255,.3);font-size:11px;letter-spacing:.1em;
+      pointer-events:none;z-index:300;text-align:center;text-transform:uppercase;
     }
-
-    #size-wrap { display: flex; align-items: center; gap: 6px; }
-    #size-wrap label { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; }
-    input[type=range] {
-      -webkit-appearance: none; appearance: none;
-      width: 54px; height: 3px;
-      background: rgba(255,255,255,0.18);
-      border-radius: 2px; outline: none; cursor: pointer;
+    #size-wrap{display:flex;align-items:center;gap:6px}
+    #size-wrap label{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.06em}
+    input[type=range]{
+      -webkit-appearance:none;appearance:none;width:54px;height:3px;
+      background:rgba(255,255,255,.18);border-radius:2px;outline:none;cursor:pointer;
     }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 11px; height: 11px;
-      border-radius: 50%;
-      background: #fff;
+    input[type=range]::-webkit-slider-thumb{
+      -webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:#fff;
     }
   </style>
 </head>
 <body>
 
-<p id="hint">Mantén presionado y mueve para dibujar &nbsp;·&nbsp; Rueda: tamaño</p>
+<p id="hint">Mantén presionado y mueve para dibujar · Rueda: tamaño</p>
 
 <div id="ui">
-  <div class="swatch active" data-idx="0" style="background:#ff1f5e;--c:#ff1f5e"></div>
-  <div class="swatch"        data-idx="1" style="background:#00dfff;--c:#00dfff"></div>
-  <div class="swatch"        data-idx="2" style="background:#22ff55;--c:#22ff55"></div>
-  <div class="swatch"        data-idx="3" style="background:#ffaa00;--c:#ffaa00"></div>
-  <div class="swatch"        data-idx="4" style="background:#cc33ff;--c:#cc33ff"></div>
-  <div class="swatch"        data-idx="5" style="background:#ffffff;--c:#ffffff"></div>
+  <div class="swatch active" data-idx="0" style="background:#ff1f5e"></div>
+  <div class="swatch"        data-idx="1" style="background:#00dfff"></div>
+  <div class="swatch"        data-idx="2" style="background:#22ff55"></div>
+  <div class="swatch"        data-idx="3" style="background:#ffaa00"></div>
+  <div class="swatch"        data-idx="4" style="background:#cc33ff"></div>
+  <div class="swatch"        data-idx="5" style="background:#ffffff"></div>
   <div class="sep"></div>
   <div id="size-wrap">
     <label>TAM</label>
@@ -104,488 +66,399 @@
 </div>
 
 <a-scene id="scene"
-  background="color: #000008"
-  renderer="antialias:true; colorManagement:true; sortObjects:true"
+  background="color:#000008"
+  renderer="antialias:true;colorManagement:true;sortObjects:true"
   vr-mode-ui="enabled:true"
 >
+  <!-- Rig de cámara -->
   <a-entity id="rig" position="0 1.6 0">
     <a-camera id="cam"
-      look-controls="pointerLockEnabled:false; magicWindowTrackingEnabled:true"
+      look-controls="pointerLockEnabled:false;magicWindowTrackingEnabled:true"
       wasd-controls="enabled:false">
     </a-camera>
   </a-entity>
+
+  <!-- El stick como entidad A-Frame (hija dinámica del controlador en VR,
+       o del rig en desktop) -->
+  <a-entity id="stick-entity" neon-stick></a-entity>
+
   <a-light type="ambient" color="#000" intensity="0.04"></a-light>
 </a-scene>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════════════
-//  CONFIGURACIÓN
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  COLORES
+// ═══════════════════════════════════════════════════════════
 const COLORS = [
-  { r:1.00, g:0.12, b:0.37 },  // rosa
-  { r:0.00, g:0.87, b:1.00 },  // cian
-  { r:0.13, g:1.00, b:0.33 },  // verde
-  { r:1.00, g:0.67, b:0.00 },  // naranja
-  { r:0.80, g:0.20, b:1.00 },  // morado
-  { r:1.00, g:1.00, b:1.00 },  // blanco
+  {hex:'#ff1f5e', r:1.00, g:0.12, b:0.37},
+  {hex:'#00dfff', r:0.00, g:0.87, b:1.00},
+  {hex:'#22ff55', r:0.13, g:1.00, b:0.33},
+  {hex:'#ffaa00', r:1.00, g:0.67, b:0.00},
+  {hex:'#cc33ff', r:0.80, g:0.20, b:1.00},
+  {hex:'#ffffff', r:1.00, g:1.00, b:1.00},
 ];
 
 const CFG = {
-  colorIdx:    0,
-  brushRadius: 0.009,   // radio del trazo
-  trailLife:   4000,    // ms que dura el rastro
-  trailOn:     true,
-  minDist:     0.006,   // distancia mínima entre puntos
-  camDist:     0.85,    // metros desde la cámara
+  colorIdx: 0,
+  trailOn:  true,
+  trailLife:4000,
+  minDist:  0.006,
+  camDist:  0.85,
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-//  SISTEMA PRINCIPAL (arranca cuando A-Frame está listo)
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  COMPONENTE: neon-stick
+//  Construye el visual del stick como meshes hijos
+//  Se mueve según el controlador (VR) o el ratón (desktop)
+// ═══════════════════════════════════════════════════════════
+AFRAME.registerComponent('neon-stick', {
+  init() {
+    const T = THREE;
+    const el = this.el;
+
+    // Materiales
+    this.mats = {
+      tube:     new T.MeshBasicMaterial({color:0xff1f5e, blending:T.AdditiveBlending, depthWrite:false}),
+      halo:     new T.MeshBasicMaterial({color:0xff1f5e, transparent:true, opacity:0.10, blending:T.AdditiveBlending, depthWrite:false, side:T.DoubleSide}),
+      tip:      new T.MeshBasicMaterial({color:0xff1f5e, blending:T.AdditiveBlending, depthWrite:false}),
+      tipGlow:  new T.MeshBasicMaterial({color:0xff1f5e, transparent:true, opacity:0.07, blending:T.AdditiveBlending, depthWrite:false}),
+      tipMid:   new T.MeshBasicMaterial({color:0xff1f5e, transparent:true, opacity:0.18, blending:T.AdditiveBlending, depthWrite:false}),
+      ember:    new T.MeshBasicMaterial({color:0xffffff,  blending:T.AdditiveBlending, depthWrite:false}),
+    };
+
+    const TIP_Z = -0.222;
+
+    function mesh(geo, mat) {
+      const m = new T.Mesh(geo, mat);
+      m.frustumCulled = false;
+      return m;
+    }
+
+    this.tubeMesh = mesh(new T.CylinderGeometry(0.006,0.006,0.44,8), this.mats.tube);
+    this.tubeMesh.rotation.x = Math.PI/2;
+    el.object3D.add(this.tubeMesh);
+
+    this.haloMesh = mesh(new T.CylinderGeometry(0.020,0.020,0.45,8), this.mats.halo);
+    this.haloMesh.rotation.x = Math.PI/2;
+    el.object3D.add(this.haloMesh);
+
+    this.tipMesh = mesh(new T.SphereGeometry(0.013,10,7), this.mats.tip);
+    this.tipMesh.position.z = TIP_Z;
+    el.object3D.add(this.tipMesh);
+
+    this.emberMesh = mesh(new T.SphereGeometry(0.007,8,6), this.mats.ember);
+    this.emberMesh.position.z = TIP_Z;
+    el.object3D.add(this.emberMesh);
+
+    this.tipGlowMesh = mesh(new T.SphereGeometry(0.048,10,7), this.mats.tipGlow);
+    this.tipGlowMesh.position.z = TIP_Z;
+    el.object3D.add(this.tipGlowMesh);
+
+    this.tipMidMesh = mesh(new T.SphereGeometry(0.024,10,7), this.mats.tipMid);
+    this.tipMidMesh.position.z = TIP_Z;
+    el.object3D.add(this.tipMidMesh);
+
+    this.TIP_Z  = TIP_Z;
+    this.tipLocal = new THREE.Vector3(0, 0, TIP_Z);
+
+    // Exponer color al sistema global
+    el.setColor = (idx) => {
+      const c = COLORS[idx];
+      const tc = new THREE.Color(c.r, c.g, c.b);
+      ['tube','halo','tip','tipGlow','tipMid'].forEach(k => this.mats[k].color.copy(tc));
+    };
+    el.setColor(0);
+  },
+
+  tick(t) {
+    const pulse = 1 + 0.18 * Math.sin(t * 0.0028);
+    this.tipGlowMesh.scale.setScalar(pulse);
+    this.tipMidMesh.scale.setScalar(0.9 + 0.1 * Math.sin(t * 0.0035));
+  },
+});
+
+// ═══════════════════════════════════════════════════════════
+//  COMPONENTE: neon-controller
+//  Se añade al controlador VR — dibuja el rastro
+// ═══════════════════════════════════════════════════════════
+AFRAME.registerComponent('neon-controller', {
+  init() {
+    this.drawing  = false;
+    this.lastPt   = null;
+    this.tipLocal = new THREE.Vector3(0, 0, -0.05);
+    this.wPos     = new THREE.Vector3();
+    this.wQuat    = new THREE.Quaternion();
+    this.tipWorld = new THREE.Vector3();
+
+    const start = () => { this.drawing = true;  this.lastPt = null; };
+    const stop  = () => { this.drawing = false; this.lastPt = null; };
+
+    this.el.addEventListener('triggerdown',  start);
+    this.el.addEventListener('triggerup',    stop);
+    this.el.addEventListener('selectstart',  start);
+    this.el.addEventListener('selectend',    stop);
+    this.el.addEventListener('bbuttondown',  () => window.clearTrails && window.clearTrails());
+    this.el.addEventListener('ybuttondown',  () => window.clearTrails && window.clearTrails());
+
+    this.el.addEventListener('thumbstickmoved', e => {
+      const {x, y} = e.detail;
+      if (Math.hypot(x,y) < 0.65) return;
+      const angle = Math.atan2(y, x);
+      const idx = ((Math.floor(((angle+Math.PI)/(Math.PI*2))*COLORS.length)) % COLORS.length + COLORS.length) % COLORS.length;
+      window.changeColor && window.changeColor(idx);
+    });
+  },
+
+  tick() {
+    const obj = this.el.object3D;
+    obj.getWorldPosition(this.wPos);
+    obj.getWorldQuaternion(this.wQuat);
+    this.tipWorld.copy(this.tipLocal)
+      .applyQuaternion(this.wQuat)
+      .add(this.wPos);
+
+    // Mover el stick a la posición del controlador
+    const stickEl = document.getElementById('stick-entity');
+    if (stickEl) {
+      stickEl.object3D.position.copy(this.wPos);
+      stickEl.object3D.quaternion.copy(this.wQuat);
+    }
+
+    if (!this.drawing) return;
+    if (!this.lastPt) { this.lastPt = this.tipWorld.clone(); return; }
+    const d = this.tipWorld.distanceTo(this.lastPt);
+    if (d < CFG.minDist) return;
+    window.addTrailSeg && window.addTrailSeg(this.lastPt, this.tipWorld);
+    this.lastPt.copy(this.tipWorld);
+  },
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SISTEMA DE RASTRO + ESTRELLAS (arranca con la escena)
+// ═══════════════════════════════════════════════════════════
 const sceneEl = document.getElementById('scene');
 const camEl   = document.getElementById('cam');
 
 sceneEl.addEventListener('loaded', () => {
-  const threeScene = sceneEl.object3D;
   const T = THREE;
+  const root = sceneEl.object3D;
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function colorVec(idx) {
-    const c = COLORS[idx];
-    return new T.Color(c.r, c.g, c.b);
-  }
-
-  // ── Estrellas ──────────────────────────────────────────────────────────────
+  // ── Estrellas ──────────────────────────────────────────
   {
-    const N = 1400;
-    const pos = new Float32Array(N * 3);
-    const col = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++) {
-      const r     = 65 + Math.random() * 55;
-      const theta = Math.random() * Math.PI * 2;
-      const phi   = Math.acos(2 * Math.random() - 1);
-      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i*3+2] = r * Math.cos(phi);
-      const b = 0.35 + Math.random() * 0.65;
-      const warm = Math.random();
-      col[i*3]   = b * (0.85 + warm * 0.15);
-      col[i*3+1] = b * (0.85 + warm * 0.05);
-      col[i*3+2] = b * (0.90 + (1-warm) * 0.10);
+    const N=1400, pos=new Float32Array(N*3), col=new Float32Array(N*3);
+    for(let i=0;i<N;i++){
+      const r=65+Math.random()*55, th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+      pos[i*3]=r*Math.sin(ph)*Math.cos(th); pos[i*3+1]=r*Math.sin(ph)*Math.sin(th); pos[i*3+2]=r*Math.cos(ph);
+      const b=0.35+Math.random()*0.65, w=Math.random();
+      col[i*3]=b*(0.85+w*0.15); col[i*3+1]=b*0.85; col[i*3+2]=b*(0.9+(1-w)*0.1);
     }
-    const geo = new T.BufferGeometry();
-    geo.setAttribute('position', new T.BufferAttribute(pos, 3));
-    geo.setAttribute('color',    new T.BufferAttribute(col, 3));
-    const mat = new T.PointsMaterial({
-      size: 0.10, vertexColors: true,
-      blending: T.AdditiveBlending, depthWrite: false,
-      transparent: true, opacity: 0.9, sizeAttenuation: true,
-    });
-    threeScene.add(new T.Points(geo, mat));
+    const geo=new T.BufferGeometry();
+    geo.setAttribute('position',new T.BufferAttribute(pos,3));
+    geo.setAttribute('color',new T.BufferAttribute(col,3));
+    const pts=new T.Points(geo,new T.PointsMaterial({size:.1,vertexColors:true,blending:T.AdditiveBlending,depthWrite:false,transparent:true,opacity:.9,sizeAttenuation:true}));
+    root.add(pts);
   }
 
-  // ── Barrita de neón ────────────────────────────────────────────────────────
-  const stickGroup = new T.Group();
-  stickGroup.frustumCulled = false;
-  threeScene.add(stickGroup);
+  // ── Pool de segmentos de rastro ────────────────────────
+  const linePool=[], activeSegs=[];
 
-  // materiales (se actualizan al cambiar color)
-  const tubeMat = new T.MeshBasicMaterial({
-    color: colorVec(0),
-    blending: T.AdditiveBlending, depthWrite: false,
-  });
-  const haloMat = new T.MeshBasicMaterial({
-    color: colorVec(0), transparent: true, opacity: 0.10,
-    blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide,
-  });
-  const tipMat = new T.MeshBasicMaterial({
-    color: colorVec(0),
-    blending: T.AdditiveBlending, depthWrite: false,
-  });
-  const tipGlowMat = new T.MeshBasicMaterial({
-    color: colorVec(0), transparent: true, opacity: 0.07,
-    blending: T.AdditiveBlending, depthWrite: false,
-  });
-  const emberMat = new T.MeshBasicMaterial({
-    color: new T.Color(1, 1, 1),  // siempre blanca brillante (como incandescente)
-    blending: T.AdditiveBlending, depthWrite: false,
-  });
-
-  // Tubo
-  const TIP_Z = -0.222;
-
-  function addStickMesh(mesh) {
-    mesh.frustumCulled = false;
-    stickGroup.add(mesh);
-    return mesh;
-  }
-
-  const tubeMesh = addStickMesh(new T.Mesh(new T.CylinderGeometry(0.006, 0.006, 0.44, 8), tubeMat));
-  tubeMesh.rotation.x = Math.PI / 2;
-
-  const haloMesh = addStickMesh(new T.Mesh(new T.CylinderGeometry(0.020, 0.020, 0.45, 8), haloMat));
-  haloMesh.rotation.x = Math.PI / 2;
-
-  const tipMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.013, 10, 7), tipMat));
-  tipMesh.position.z = TIP_Z;
-
-  const emberMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.007, 8, 6), emberMat));
-  emberMesh.position.z = TIP_Z;
-
-  const tipGlowMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.048, 10, 7), tipGlowMat));
-  tipGlowMesh.position.z = TIP_Z;
-
-  const tipMidGlowMat = new T.MeshBasicMaterial({
-    color: colorVec(0), transparent: true, opacity: 0.18,
-    blending: T.AdditiveBlending, depthWrite: false,
-  });
-  const tipMidGlowMesh = addStickMesh(new T.Mesh(new T.SphereGeometry(0.024, 10, 7), tipMidGlowMat));
-  tipMidGlowMesh.position.z = TIP_Z;
-
-  function setColor(idx) {
-    const c = colorVec(idx);
-    tubeMat.color.copy(c);
-    haloMat.color.copy(c);
-    tipMat.color.copy(c);
-    tipGlowMat.color.copy(c);
-    tipMidGlowMat.color.copy(c);
-    // ember siempre blanca
-  }
-
-  // ── Rastro: pool de segmentos de línea ─────────────────────────────────────
-  //   Cada segmento = una THREE.Line de 2 puntos con blending aditivo
-  //   Al expirar vuelve al pool (invisible) para reutilizarse
-
-  const linePool   = [];
-  const activeSegs = []; // { line, born, life, col }
-
-  function makePoolLine() {
-    const geo = new T.BufferGeometry();
-    geo.setAttribute('position', new T.BufferAttribute(new Float32Array(6), 3));
-    const mat = new T.LineBasicMaterial({
-      blending: T.AdditiveBlending, depthWrite: false,
-      transparent: true, opacity: 1, vertexColors: false,
-    });
-    const ln = new T.Line(geo, mat);
-    ln.frustumCulled = false;
-    threeScene.add(ln);
+  function makeLine(){
+    const geo=new T.BufferGeometry();
+    geo.setAttribute('position',new T.BufferAttribute(new Float32Array(6),3));
+    const ln=new T.Line(geo,new T.LineBasicMaterial({
+      blending:T.AdditiveBlending,depthWrite:false,transparent:true,opacity:1
+    }));
+    ln.frustumCulled=false;
+    root.add(ln);
     return ln;
   }
+  function getLine(){ return linePool.length ? linePool.pop() : makeLine(); }
+  function recycle(ln){ ln.visible=false; linePool.push(ln); }
 
-  function getLine() {
-    return linePool.length ? linePool.pop() : makePoolLine();
-  }
-
-  function recycleLine(ln) {
-    ln.visible = false;
-    linePool.push(ln);
-  }
-
-  function addSegment(p1, p2, colIdx) {
-    if (!CFG.trailOn) return;
-    const ln  = getLine();
-    const arr = ln.geometry.attributes.position.array;
-    arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
-    arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
-    ln.geometry.attributes.position.needsUpdate = true;
+  window.addTrailSeg = (p1, p2) => {
+    if(!CFG.trailOn) return;
+    const ln=getLine();
+    const a=ln.geometry.attributes.position.array;
+    a[0]=p1.x;a[1]=p1.y;a[2]=p1.z;
+    a[3]=p2.x;a[4]=p2.y;a[5]=p2.z;
+    ln.geometry.attributes.position.needsUpdate=true;
     ln.geometry.computeBoundingSphere();
-    const c = COLORS[colIdx];
-    ln.material.color.setRGB(c.r, c.g, c.b);
-    ln.material.opacity = 1;
-    ln.visible = true;
-    activeSegs.push({ line: ln, born: performance.now(), life: CFG.trailLife });
-  }
-
-  // ── Chispas / partículas de la punta ───────────────────────────────────────
-  const SPARK_N  = 160;
-  const sparkBuf = {
-    pos: new Float32Array(SPARK_N * 3),
-    col: new Float32Array(SPARK_N * 3),
+    const c=COLORS[CFG.colorIdx];
+    ln.material.color.setRGB(c.r,c.g,c.b);
+    ln.material.opacity=1;
+    ln.visible=true;
+    activeSegs.push({line:ln, born:performance.now(), life:CFG.trailLife});
   };
-  const sparkGeo = new T.BufferGeometry();
-  sparkGeo.setAttribute('position', new T.BufferAttribute(sparkBuf.pos, 3));
-  sparkGeo.setAttribute('color',    new T.BufferAttribute(sparkBuf.col, 3));
-  const sparkMat = new T.PointsMaterial({
-    size: 0.022, vertexColors: true,
-    blending: T.AdditiveBlending, depthWrite: false,
-    transparent: true, sizeAttenuation: true,
-  });
-  threeScene.add(new T.Points(sparkGeo, sparkMat));
 
-  const sparkData = Array.from({ length: SPARK_N }, () => ({
-    active: false,
-    pos: new T.Vector3(),
-    vel: new T.Vector3(),
-    born: 0, life: 0,
-    col: COLORS[0],
+  window.clearTrails = () => {
+    for(let i=activeSegs.length-1;i>=0;i--) recycle(activeSegs[i].line);
+    activeSegs.length=0;
+  };
+
+  // ── Chispas ────────────────────────────────────────────
+  const SPARK_N=160;
+  const sBuf={pos:new Float32Array(SPARK_N*3), col:new Float32Array(SPARK_N*3)};
+  const sGeo=new T.BufferGeometry();
+  sGeo.setAttribute('position',new T.BufferAttribute(sBuf.pos,3));
+  sGeo.setAttribute('color',new T.BufferAttribute(sBuf.col,3));
+  const sparksObj=new T.Points(sGeo,new T.PointsMaterial({
+    size:.02,vertexColors:true,blending:T.AdditiveBlending,depthWrite:false,transparent:true,sizeAttenuation:true
   }));
+  sparksObj.frustumCulled=false;
+  root.add(sparksObj);
 
-  function emitSpark(origin, colIdx) {
-    const s = sparkData.find(d => !d.active);
-    if (!s) return;
-    s.active = true;
-    s.pos.copy(origin);
-    const sp = 0.015 + Math.random() * 0.025;
-    s.vel.set(
-      (Math.random() - 0.5) * sp,
-      (Math.random() - 0.5) * sp,
-      (Math.random() - 0.5) * sp,
-    );
-    s.born = performance.now();
-    s.life = 250 + Math.random() * 600;
-    s.col  = COLORS[colIdx];
+  const sData=Array.from({length:SPARK_N},()=>({active:false,pos:new T.Vector3(),vel:new T.Vector3(),born:0,life:0,col:COLORS[0]}));
+
+  function emitSpark(origin){
+    const s=sData.find(d=>!d.active); if(!s) return;
+    s.active=true; s.pos.copy(origin);
+    const sp=0.015+Math.random()*0.025;
+    s.vel.set((Math.random()-.5)*sp,(Math.random()-.5)*sp,(Math.random()-.5)*sp);
+    s.born=performance.now(); s.life=250+Math.random()*600; s.col=COLORS[CFG.colorIdx];
   }
 
-  // ── Posicionamiento del stick en modo escritorio/móvil ─────────────────────
-  const _camPos  = new T.Vector3();
-  const _camQuat = new T.Quaternion();
-  const _dir     = new T.Vector3();
-  const tipWorld = new T.Vector3(); // posición mundial de la punta (se actualiza cada frame)
-
-  function positionStickFromNDC(nx, ny) {
-    const co = camEl.object3D;
-    co.getWorldPosition(_camPos);
-    co.getWorldQuaternion(_camQuat);
-
-    const fovRad = camEl.components.camera.data.fov * (Math.PI / 180);
-    const halfH  = Math.tan(fovRad * 0.5);
-    const halfW  = halfH * (window.innerWidth / window.innerHeight);
-
-    _dir.set(nx * halfW, ny * halfH, -1).normalize().applyQuaternion(_camQuat);
-
-    stickGroup.position.copy(_camPos).addScaledVector(_dir, CFG.camDist);
-    stickGroup.quaternion.copy(_camQuat);
-
-    // Punta en world space
-    tipWorld.set(0, 0, TIP_Z)
-      .applyQuaternion(_camQuat)
-      .add(stickGroup.position);
-  }
-
-  // ── Lógica de dibujo ───────────────────────────────────────────────────────
-  let drawing = false;
-  let lastPt  = null;
-
-  function onDraw() {
-    if (!drawing) return;
-    if (!lastPt) { lastPt = tipWorld.clone(); return; }
-    const d = tipWorld.distanceTo(lastPt);
-    if (d < CFG.minDist) return;
-    addSegment(lastPt, tipWorld, CFG.colorIdx);
-    if (Math.random() < 0.35) emitSpark(tipWorld, CFG.colorIdx);
-    lastPt.copy(tipWorld);
-  }
-
-  // ── Tick principal (registrado como componente A-Frame) ────────────────────
-  AFRAME.registerComponent('neon-system', {
-    tick(time, dt) {
-      const now = performance.now();
-      const t   = now * 0.001;
-
-      // Pulso de la punta
-      const pulse = 1 + 0.18 * Math.sin(t * 2.8);
-      tipGlowMesh.scale.setScalar(pulse);
-      tipMidGlowMesh.scale.setScalar(0.9 + 0.1 * Math.sin(t * 3.5));
-
-      // Fade de segmentos de rastro
-      for (let i = activeSegs.length - 1; i >= 0; i--) {
-        const s   = activeSegs[i];
-        const age = now - s.born;
-        if (age >= s.life) { recycleLine(s.line); activeSegs.splice(i, 1); continue; }
-        // fade: rápido al inicio para dar sensación de calor que se enfría,
-        //       pero mantiene algo de brillo antes de desaparecer
-        const progress = age / s.life;
-        const opacity  = Math.pow(1 - progress, 0.7);
-        s.line.material.opacity = opacity;
+  // ── Tick global (fade de rastros y chispas) ────────────
+  AFRAME.registerComponent('trail-system', {
+    tick(_t, dt){
+      const now=performance.now();
+      // fade rastros
+      for(let i=activeSegs.length-1;i>=0;i--){
+        const s=activeSegs[i], age=now-s.born;
+        if(age>=s.life){ recycle(s.line); activeSegs.splice(i,1); continue; }
+        s.line.material.opacity=Math.pow(1-age/s.life,.7);
       }
-
-      // Chispas
-      for (let i = 0; i < SPARK_N; i++) {
-        const s = sparkData[i];
-        if (!s.active) {
-          sparkBuf.pos[i*3+1] = -9999; // ocultar
-          continue;
-        }
-        const age = now - s.born;
-        if (age > s.life) { s.active = false; sparkBuf.pos[i*3+1] = -9999; continue; }
-        s.vel.y -= 0.000018 * dt;
-        s.pos.addScaledVector(s.vel, dt);
-        sparkBuf.pos[i*3]   = s.pos.x;
-        sparkBuf.pos[i*3+1] = s.pos.y;
-        sparkBuf.pos[i*3+2] = s.pos.z;
-        const tf = Math.pow(1 - age / s.life, 0.6);
-        sparkBuf.col[i*3]   = s.col.r * tf;
-        sparkBuf.col[i*3+1] = s.col.g * tf;
-        sparkBuf.col[i*3+2] = s.col.b * tf;
+      // chispas
+      for(let i=0;i<SPARK_N;i++){
+        const s=sData[i];
+        if(!s.active){ sBuf.pos[i*3+1]=-9999; continue; }
+        const age=now-s.born;
+        if(age>s.life){ s.active=false; sBuf.pos[i*3+1]=-9999; continue; }
+        s.vel.y-=0.000018*dt; s.pos.addScaledVector(s.vel,dt);
+        sBuf.pos[i*3]=s.pos.x; sBuf.pos[i*3+1]=s.pos.y; sBuf.pos[i*3+2]=s.pos.z;
+        const tf=Math.pow(1-age/s.life,.6);
+        sBuf.col[i*3]=s.col.r*tf; sBuf.col[i*3+1]=s.col.g*tf; sBuf.col[i*3+2]=s.col.b*tf;
       }
-      sparkGeo.attributes.position.needsUpdate = true;
-      sparkGeo.attributes.color.needsUpdate    = true;
-
-      // Emitir chispas pasivas mientras se dibuja
-      if (drawing && CFG.trailOn && Math.random() < 0.25) {
-        emitSpark(tipWorld, CFG.colorIdx);
-      }
-    },
-  });
-
-  sceneEl.setAttribute('neon-system', '');
-
-  // ── Controladores VR ───────────────────────────────────────────────────────
-  AFRAME.registerComponent('neon-hand', {
-    schema: { hand: { default: 'right' } },
-    init() {
-      this.vrLastPt  = null;
-      this.vrDrawing = false;
-      this.wPos      = new T.Vector3();
-      this.wQuat     = new T.Quaternion();
-      this.localTip  = new T.Vector3(0, 0, -0.05);
-
-      const startDraw = () => { this.vrDrawing = true;  this.vrLastPt = null; };
-      const stopDraw  = () => { this.vrDrawing = false; this.vrLastPt = null; };
-
-      // Oculus / Quest
-      this.el.addEventListener('triggerdown', startDraw);
-      this.el.addEventListener('triggerup',   stopDraw);
-      // Controladores genéricos WebXR (select = gatillo principal)
-      this.el.addEventListener('selectstart', startDraw);
-      this.el.addEventListener('selectend',   stopDraw);
-
-      this.el.addEventListener('bbuttondown', clearTrails);
-      this.el.addEventListener('ybuttondown', clearTrails);
-
-      this.el.addEventListener('thumbstickmoved', e => {
-        const { x, y } = e.detail;
-        if (Math.hypot(x, y) < 0.65) return;
-        const angle = Math.atan2(y, x);
-        const idx   = ((Math.floor(((angle + Math.PI) / (Math.PI * 2)) * COLORS.length)) % COLORS.length + COLORS.length) % COLORS.length;
-        changeColor(idx);
-      });
-    },
-    tick() {
-      const obj = this.el.object3D;
-
-      // Posición y rotación mundiales del controlador
-      obj.getWorldPosition(this.wPos);
-      obj.getWorldQuaternion(this.wQuat);
-
-      // La punta del stick apunta hacia adelante (-Z local)
-      const tip = this.localTip.clone()
-        .applyQuaternion(this.wQuat)
-        .add(this.wPos);
-
-      stickGroup.position.copy(this.wPos);
-      stickGroup.quaternion.copy(this.wQuat);
-      tipWorld.copy(tip);
-
-      if (!this.vrDrawing) return;
-      if (!this.vrLastPt) { this.vrLastPt = tip.clone(); return; }
-      const d = tip.distanceTo(this.vrLastPt);
-      if (d < CFG.minDist) return;
-      addSegment(this.vrLastPt, tip, CFG.colorIdx);
-      if (Math.random() < 0.4) emitSpark(tip, CFG.colorIdx);
-      this.vrLastPt.copy(tip);
-    },
-  });
-
-  sceneEl.addEventListener('enter-vr', () => {
-    document.getElementById('ui').style.display   = 'none';
-    document.getElementById('hint').style.display = 'none';
-
-    // Intentar con Oculus Touch primero; si no hay controladores físicos
-    // también creamos un fallback de mano izquierda para dispositivos sin controladores
-    const handR = document.createElement('a-entity');
-    handR.setAttribute('oculus-touch-controls', 'hand: right');
-    handR.setAttribute('laser-controls', 'hand: right');
-    handR.setAttribute('neon-hand', 'hand: right');
-    handR.id = 'vr-hand-r';
-    sceneEl.appendChild(handR);
-
-    const handL = document.createElement('a-entity');
-    handL.setAttribute('oculus-touch-controls', 'hand: left');
-    handL.setAttribute('laser-controls', 'hand: left');
-    handL.id = 'vr-hand-l';
-    sceneEl.appendChild(handL);
-  });
-
-  sceneEl.addEventListener('exit-vr', () => {
-    document.getElementById('ui').style.display   = '';
-    document.getElementById('hint').style.display = '';
-    ['vr-hand-r', 'vr-hand-l'].forEach(id => {
-      const h = document.getElementById(id);
-      if (h) h.remove();
-    });
-  });
-
-  // ── Eventos de escritorio / móvil ─────────────────────────────────────────
-  function ndcFromClient(cx, cy) {
-    return [
-       (cx / window.innerWidth)  * 2 - 1,
-      -(cy / window.innerHeight) * 2 + 1,
-    ];
-  }
-
-  window.addEventListener('mousemove', e => {
-    positionStickFromNDC(...ndcFromClient(e.clientX, e.clientY));
-    onDraw();
-  });
-  window.addEventListener('mousedown', e => {
-    if (e.target.closest('#ui')) return;
-    drawing = true; lastPt = null;
-  });
-  window.addEventListener('mouseup', () => { drawing = false; lastPt = null; });
-
-  window.addEventListener('touchmove', e => {
-    e.preventDefault();
-    const t = e.touches[0];
-    positionStickFromNDC(...ndcFromClient(t.clientX, t.clientY));
-    onDraw();
-  }, { passive: false });
-  window.addEventListener('touchstart', e => {
-    if (e.target.closest('#ui')) return;
-    drawing = true; lastPt = null;
-  }, { passive: true });
-  window.addEventListener('touchend', () => { drawing = false; lastPt = null; });
-
-  window.addEventListener('wheel', e => {
-    CFG.brushRadius = Math.max(0.003, Math.min(0.045, CFG.brushRadius - e.deltaY * 0.00003));
-    document.getElementById('szSlider').value = CFG.brushRadius * 1000 / 4.5;
-  }, { passive: true });
-
-  // Posición inicial
-  positionStickFromNDC(0, 0);
-
-  // ── Funciones globales de control ─────────────────────────────────────────
-  function clearTrails() {
-    for (let i = activeSegs.length - 1; i >= 0; i--) {
-      recycleLine(activeSegs[i].line);
+      sGeo.attributes.position.needsUpdate=true;
+      sGeo.attributes.color.needsUpdate=true;
     }
-    activeSegs.length = 0;
+  });
+  sceneEl.setAttribute('trail-system','');
+
+  // ── Control de color global ────────────────────────────
+  window.changeColor = (idx) => {
+    CFG.colorIdx=idx;
+    document.getElementById('stick-entity').setColor(idx);
+    document.querySelectorAll('.swatch').forEach((s,i)=>s.classList.toggle('active',i===idx));
+  };
+
+  // ── Posicionamiento desktop (ratón/touch) ──────────────
+  let drawing=false, lastPt=null;
+  const stickEl = document.getElementById('stick-entity');
+  const _cPos=new T.Vector3(), _cQ=new T.Quaternion(), _dir=new T.Vector3();
+
+  function positionStick(nx, ny){
+    const co=camEl.object3D;
+    co.getWorldPosition(_cPos);
+    co.getWorldQuaternion(_cQ);
+    const fov=camEl.components.camera.data.fov*(Math.PI/180);
+    const halfH=Math.tan(fov*.5), halfW=halfH*(window.innerWidth/window.innerHeight);
+    _dir.set(nx*halfW, ny*halfH, -1).normalize().applyQuaternion(_cQ);
+    const p=_cPos.clone().addScaledVector(_dir, CFG.camDist);
+    stickEl.object3D.position.copy(p);
+    stickEl.object3D.quaternion.copy(_cQ);
+    return p;
   }
 
-  function changeColor(idx) {
-    CFG.colorIdx = idx;
-    setColor(idx);
-    document.querySelectorAll('.swatch').forEach((s, i) => {
-      s.classList.toggle('active', i === idx);
-    });
+  function getTipWorld(){
+    const TIP_Z=-0.222;
+    const local=new T.Vector3(0,0,TIP_Z).applyQuaternion(stickEl.object3D.quaternion);
+    return stickEl.object3D.position.clone().add(local);
   }
 
-  // ── Conectar UI ───────────────────────────────────────────────────────────
-  document.querySelectorAll('.swatch').forEach((s, i) => {
-    s.addEventListener('click', () => changeColor(i));
-  });
+  function onDraw(){
+    if(!drawing || !CFG.trailOn) return;
+    const tip=getTipWorld();
+    if(!lastPt){ lastPt=tip.clone(); return; }
+    const d=tip.distanceTo(lastPt);
+    if(d<CFG.minDist) return;
+    window.addTrailSeg(lastPt, tip);
+    if(Math.random()<.35) emitSpark(tip);
+    lastPt.copy(tip);
+  }
 
-  document.getElementById('clearBtn').addEventListener('click', clearTrails);
+  function ndc(cx,cy){ return [(cx/window.innerWidth)*2-1, -(cy/window.innerHeight)*2+1]; }
 
-  document.getElementById('trailBtn').addEventListener('click', function() {
-    CFG.trailOn = !CFG.trailOn;
-    this.textContent = 'Rastro: ' + (CFG.trailOn ? 'ON' : 'OFF');
-    if (!CFG.trailOn) clearTrails();
+  window.addEventListener('mousemove', e=>{
+    if(sceneEl.is('vr-mode')) return;
+    positionStick(...ndc(e.clientX,e.clientY));
+    onDraw();
   });
+  window.addEventListener('mousedown', e=>{ if(e.target.closest('#ui')||sceneEl.is('vr-mode')) return; drawing=true; lastPt=null; });
+  window.addEventListener('mouseup',   ()=>{ drawing=false; lastPt=null; });
+  window.addEventListener('touchmove', e=>{
+    if(sceneEl.is('vr-mode')) return;
+    e.preventDefault();
+    const t=e.touches[0]; positionStick(...ndc(t.clientX,t.clientY)); onDraw();
+  },{passive:false});
+  window.addEventListener('touchstart', e=>{ if(e.target.closest('#ui')||sceneEl.is('vr-mode')) return; drawing=true; lastPt=null; },{passive:true});
+  window.addEventListener('touchend',   ()=>{ drawing=false; lastPt=null; });
+  window.addEventListener('wheel', e=>{
+    CFG.brushRadius=Math.max(.003,Math.min(.045,(CFG.brushRadius||.009)-e.deltaY*.00003));
+    document.getElementById('szSlider').value=(CFG.brushRadius||.009)*1000/4.5;
+  },{passive:true});
 
-  document.getElementById('szSlider').addEventListener('input', function() {
-    CFG.brushRadius = this.value * 4.5 / 1000;
+  // posición inicial del stick
+  positionStick(0, 0);
+
+  // ── Emitir chispas pasivas mientras se dibuja ──────────
+  AFRAME.registerComponent('spark-emitter',{
+    tick(){
+      if(drawing && CFG.trailOn && Math.random()<.25) emitSpark(getTipWorld());
+    }
   });
+  sceneEl.setAttribute('spark-emitter','');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  VR: añadir/quitar controladores
+// ═══════════════════════════════════════════════════════════
+sceneEl.addEventListener('enter-vr', () => {
+  document.getElementById('ui').style.display   = 'none';
+  document.getElementById('hint').style.display = 'none';
+
+  ['right','left'].forEach((hand, i) => {
+    const h = document.createElement('a-entity');
+    h.setAttribute('oculus-touch-controls', `hand:${hand}`);
+    h.setAttribute('laser-controls',        `hand:${hand}`);
+    if(i === 0) h.setAttribute('neon-controller','');
+    h.id = `vr-hand-${hand}`;
+    sceneEl.appendChild(h);
+  });
+});
+
+sceneEl.addEventListener('exit-vr', () => {
+  document.getElementById('ui').style.display   = '';
+  document.getElementById('hint').style.display = '';
+  ['right','left'].forEach(hand => {
+    const h = document.getElementById(`vr-hand-${hand}`);
+    if(h) h.remove();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.swatch').forEach((s,i) => {
+  s.addEventListener('click', () => window.changeColor && window.changeColor(i));
+});
+document.getElementById('clearBtn').addEventListener('click', () => window.clearTrails && window.clearTrails());
+document.getElementById('trailBtn').addEventListener('click', function(){
+  CFG.trailOn = !CFG.trailOn;
+  this.textContent = 'Rastro: '+(CFG.trailOn?'ON':'OFF');
+  if(!CFG.trailOn) window.clearTrails && window.clearTrails();
+});
+document.getElementById('szSlider').addEventListener('input', function(){
+  CFG.brushRadius = this.value*4.5/1000;
 });
 </script>
 </body>
